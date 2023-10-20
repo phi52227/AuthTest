@@ -29,7 +29,7 @@ export default function CompareAddr({
   const {address, afterCheck} = route.params;
 
   const [loading, setLoading] = useState<boolean>(false); // 위치값 불러오기와 주소 비교가 완료됐는지
-  const [include, setInclude] = useState<boolean>(false); // 현재 위치가 주소의 위치 반경 50m 안에 들었는지
+  const [include, setInclude] = useState<boolean>(false); // 현재 위치가 주소의 위치 반경 200m 안에 들었는지
   const [difference, setDifference] = useState(0);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function CompareAddr({
       // eslint-disable-next-line react-hooks/exhaustive-deps
       longitudeToMeter = await measureLongitudeToMeter(addrY);
       const distance = await measureDistance(addrX, addrY, currentX, currentY);
-      if (distance < 50) {
+      if (distance < 200) {
         setInclude(true);
       } else {
         setInclude(false);
@@ -168,5 +168,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '700',
     marginTop: 10,
+    color: 'black',
   },
 });
