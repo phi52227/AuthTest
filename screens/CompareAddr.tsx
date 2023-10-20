@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Text, View, StyleSheet} from 'react-native';
+import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
 import axios from 'axios';
@@ -26,10 +26,12 @@ export default function CompareAddr({
   const radian = 0.017453; // 라디안 (π / 180)
   const latitudeToMeter = 111194.926645; //위도 1도를 미터 단위로 환산한 값 (m 단위)
   let longitudeToMeter = 0; //경도 1도를 미터 단위로 환산한 값 (위도에 따라 경도가 다르므로 계산 필요, m 단위)
-  const {address} = route.params;
+  const {address, afterCheck} = route.params;
 
-  const [loading, setLoading] = useState(true);
-  const [include, setInclude] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false); // 위치값 불러오기와 주소 비교가 완료됐는지
+  const [include, setInclude] = useState<boolean>(false); // 현재 위치가 주소의 위치 반경 50m 안에 들었는지
+  const [difference, setDifference] = useState(0);
+
   useEffect(() => {
     const compare = async () => {
       const [addrX, addrY] = await requestAddress();
@@ -42,11 +44,17 @@ export default function CompareAddr({
       } else {
         setInclude(false);
       }
-      setLoading(false);
+      setDifference(distance);
+      setLoading(true);
     };
     compare();
   }, []);
 
+  // useEffect(() => {
+
+  // }, [loading])
+
+  // 검색한 주소의 위치 정보를 불러오는 함수
   const requestAddress = async () => {
     console.log('1 start');
     try {
@@ -67,6 +75,7 @@ export default function CompareAddr({
     }
   };
 
+  // 현재 위치 정보를 불러오는 함수
   const requestCurrentAddress = () => {
     return new Promise((resolve, reject) => {
       console.log('2 start');
@@ -87,11 +96,13 @@ export default function CompareAddr({
     });
   };
 
+  // 위도에 따라 경도의 미터 환산이 달라지므로 위도를 받아 그것을 계산하는 함수
   const measureLongitudeToMeter = async addrY => {
     console.log('3');
     return earthRadius * radian * Math.cos(addrY * radian) * 1000;
   };
 
+  // 두 위치의 거리를 계산하는 함수
   const measureDistance = async (x1, y1, x2, y2) => {
     console.log('4');
     const differenceX = (x1 - x2) * longitudeToMeter;
@@ -102,17 +113,60 @@ export default function CompareAddr({
     return differenceDistance;
   };
 
-  return loading ? (
+  const pushOkButton = () => {
+    navigation.goBack();
+    afterCheck(include);
+  };
+
+  return !loading ? (
     <AddrLoading />
   ) : !include ? (
-    <View>
-      <Text>주소와 일치하지 않습니다.</Text>
+    <View style={styles.container}>
+      <Text style={styles.text}>주소와 일치하지 않습니다.</Text>
+      <Text style={styles.addressText}>{difference}</Text>
+      <TouchableOpacity style={styles.button} onPress={() => pushOkButton()}>
+        <Text style={styles.buttonText}>확인</Text>
+      </TouchableOpacity>
     </View>
   ) : (
-    <View>
-      <Text>주소 인증에 성공했습니다.</Text>
+    <View style={styles.container}>
+      <Text style={styles.text}>주소 인증에 성공했습니다.</Text>
+      <Text style={styles.addressText}>{difference}</Text>
+      <TouchableOpacity style={styles.button} onPress={() => pushOkButton()}>
+        <Text style={styles.buttonText}>확인</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
-// const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 30,
+    color: 'black',
+  },
+  button: {
+    width: '50%',
+    alignContent: 'center',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    marginVertical: 50,
+  },
+  buttonText: {
+    fontSize: 20,
+    textAlign: 'center',
+    fontWeight: '700',
+    color: 'black',
+    padding: 10,
+  },
+  addressText: {
+    fontSize: 13,
+    textAlign: 'center',
+    fontWeight: '700',
+    marginTop: 10,
+  },
+});

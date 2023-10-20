@@ -9,21 +9,34 @@ export type MenuScreenProps = NativeStackScreenProps<
 >;
 
 export default function Menu({navigation}: MenuScreenProps) {
+  const [phoneAuth, setPhoneAuth] = React.useState<boolean>(false);
+  const [addressAuth, setAddressAuth] = React.useState<boolean>(false);
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          navigation.navigate('Phone');
+          navigation.navigate('Phone', {setPhoneAuth: setPhoneAuth});
         }}>
         <Text style={styles.text}>전화번호 인증 테스트</Text>
+        <Text style={styles.booleanText}>{phoneAuth.toString()}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          navigation.navigate('Address');
+          navigation.navigate('Address', {setAddressAuth: setAddressAuth});
         }}>
         <Text style={styles.text}>주소 인증 테스트</Text>
+        <Text style={styles.booleanText}>{addressAuth.toString()}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          setPhoneAuth(false);
+          setAddressAuth(false);
+        }}>
+        <Text style={styles.text}>인증 정보 초기화</Text>
       </TouchableOpacity>
     </View>
   );
@@ -41,12 +54,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderWidth: 1,
     marginVertical: 50,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   text: {
-    fontSize: 30,
+    fontSize: 20,
     textAlign: 'center',
     fontWeight: '700',
     color: 'black',
+    padding: 10,
+  },
+  booleanText: {
+    fontSize: 20,
+    textAlign: 'center',
+    fontWeight: '700',
+    color: 'red',
     padding: 10,
   },
 });

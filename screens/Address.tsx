@@ -9,9 +9,19 @@ export type AddressScreenProps = NativeStackScreenProps<
   'Address'
 >;
 
-export default function Address({navigation}: AddressScreenProps) {
+export default function Address({navigation, route}: AddressScreenProps) {
+  const {setAddressAuth} = route.params;
+
   const getAddressData = data => {
-    navigation.navigate('CompareAddr', {address: data.roadAddress});
+    navigation.navigate('CompareAddr', {
+      address: data.roadAddress,
+      afterCheck: afterCheck,
+    });
+  };
+
+  const afterCheck = (auth: boolean) => {
+    setAddressAuth(auth);
+    navigation.goBack();
   };
 
   return (
