@@ -7,6 +7,7 @@ import Phone from './screens/Phone';
 import Address from './screens/Address';
 import Menu from './screens/Menu';
 import {RootStackParamList} from './types';
+import CompareAddr from './screens/CompareAddr';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -17,6 +18,7 @@ function App() {
         <Stack.Screen name="Menu" component={Menu} />
         <Stack.Screen name="Phone" component={Phone} />
         <Stack.Screen name="Address" component={Address} />
+        <Stack.Screen name="CompareAddr" component={CompareAddr} />
       </Stack.Navigator>
     </NavigationContainer>
   );
