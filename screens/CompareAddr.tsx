@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
+import {Text, View, StyleSheet, TouchableOpacity, Alert} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
 import axios from 'axios';
@@ -17,11 +17,6 @@ export default function CompareAddr({
   navigation,
   route,
 }: CompareAddrScreenProps) {
-  // let addrX = 0;
-  // let addrY = 0;
-  // let currentX = 0;
-  // let currentY = 0;
-  // let distance = 0;
   const earthRadius = 6371; // 지구 반지름 (km 단위)
   const radian = 0.017453; // 라디안 (π / 180)
   const latitudeToMeter = 111194.926645; //위도 1도를 미터 단위로 환산한 값 (m 단위)
@@ -31,6 +26,7 @@ export default function CompareAddr({
   const [loading, setLoading] = useState<boolean>(false); // 위치값 불러오기와 주소 비교가 완료됐는지
   const [include, setInclude] = useState<boolean>(false); // 현재 위치가 주소의 위치 반경 200m 안에 들었는지
   const [difference, setDifference] = useState(0);
+  const [xy, setXy] = useState();
 
   useEffect(() => {
     const compare = async () => {
@@ -45,14 +41,11 @@ export default function CompareAddr({
         setInclude(false);
       }
       setDifference(distance);
+      setXy([addrX, addrY, currentX, currentY]);
       setLoading(true);
     };
     compare();
   }, []);
-
-  // useEffect(() => {
-
-  // }, [loading])
 
   // 검색한 주소의 위치 정보를 불러오는 함수
   const requestAddress = async () => {
@@ -79,11 +72,10 @@ export default function CompareAddr({
   const requestCurrentAddress = () => {
     return new Promise((resolve, reject) => {
       console.log('2 start');
-
       Geolocation.getCurrentPosition(
-        info => {
-          const x = info.coords.longitude;
-          const y = info.coords.latitude;
+        position => {
+          const x = position.coords.longitude;
+          const y = position.coords.latitude;
           console.log('2 end');
           resolve([x, y]);
         },
@@ -91,19 +83,24 @@ export default function CompareAddr({
           console.log(error.code, error.message);
           reject(error);
         },
-        {enableHighAccuracy: true},
+        {enableHighAccuracy: false, maximumAge: 0},
       );
     });
   };
 
   // 위도에 따라 경도의 미터 환산이 달라지므로 위도를 받아 그것을 계산하는 함수
-  const measureLongitudeToMeter = async addrY => {
+  const measureLongitudeToMeter = async (addrY: number) => {
     console.log('3');
     return earthRadius * radian * Math.cos(addrY * radian) * 1000;
   };
 
   // 두 위치의 거리를 계산하는 함수
-  const measureDistance = async (x1, y1, x2, y2) => {
+  const measureDistance = async (
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+  ) => {
     console.log('4');
     const differenceX = (x1 - x2) * longitudeToMeter;
     const differenceY = (y1 - y2) * latitudeToMeter;
@@ -124,6 +121,11 @@ export default function CompareAddr({
     <View style={styles.container}>
       <Text style={styles.text}>주소와 일치하지 않습니다.</Text>
       <Text style={styles.addressText}>{difference}</Text>
+      <Text style={styles.test1Text}>{address}</Text>
+      <Text style={styles.test1Text}>{xy[0]}</Text>
+      <Text style={styles.test1Text}>{xy[1]}</Text>
+      <Text style={styles.test2Text}>{xy[2]}</Text>
+      <Text style={styles.test2Text}>{xy[3]}</Text>
       <TouchableOpacity style={styles.button} onPress={() => pushOkButton()}>
         <Text style={styles.buttonText}>확인</Text>
       </TouchableOpacity>
@@ -132,6 +134,11 @@ export default function CompareAddr({
     <View style={styles.container}>
       <Text style={styles.text}>주소 인증에 성공했습니다.</Text>
       <Text style={styles.addressText}>{difference}</Text>
+      <Text style={styles.test1Text}>{address}</Text>
+      <Text style={styles.test1Text}>{xy[0]}</Text>
+      <Text style={styles.test1Text}>{xy[1]}</Text>
+      <Text style={styles.test2Text}>{xy[2]}</Text>
+      <Text style={styles.test2Text}>{xy[3]}</Text>
       <TouchableOpacity style={styles.button} onPress={() => pushOkButton()}>
         <Text style={styles.buttonText}>확인</Text>
       </TouchableOpacity>
@@ -169,5 +176,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 10,
     color: 'black',
+  },
+  test1Text: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '700',
+    color: 'red',
+  },
+  test2Text: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '700',
+    color: 'blue',
   },
 });

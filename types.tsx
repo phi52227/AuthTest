@@ -12,4 +12,8 @@ export type RootStackParamList = {
     address: string;
     afterCheck: (value: boolean) => void;
   };
+  PhoneAuth: {
+    number: string | undefined;
+    afterCheck: (vaule: boolean) => void;
+  };
 };

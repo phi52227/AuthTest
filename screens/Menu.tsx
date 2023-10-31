@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Text, TouchableOpacity, View, StyleSheet} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
+import PermissionUtil, {APP_PERMISSION_CODE} from './PermissionUtil';
 
 export type MenuScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -11,6 +12,10 @@ export type MenuScreenProps = NativeStackScreenProps<
 export default function Menu({navigation}: MenuScreenProps) {
   const [phoneAuth, setPhoneAuth] = React.useState<boolean>(false);
   const [addressAuth, setAddressAuth] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    PermissionUtil.cmmReqPermis(APP_PERMISSION_CODE.location);
+  }, []);
 
   return (
     <View style={styles.container}>
